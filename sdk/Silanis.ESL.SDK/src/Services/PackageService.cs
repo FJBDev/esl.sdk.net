@@ -581,12 +581,22 @@ namespace Silanis.ESL.SDK.Services
 
                 string response = restClient.PostMultipartPackage(path, content, boundary, json); 
 
-                IList<Silanis.ESL.API.Document> uploadedDocuments = 
-                    JsonConvert.DeserializeObject<IList<Silanis.ESL.API.Document>>(response, settings);
-
                 IList<Document> sdkDocuments = new List<Document>();
-                foreach (Silanis.ESL.API.Document uploadedDocument in uploadedDocuments) 
+
+                if(response.StartsWith("[")) 
                 {
+                    IList<Silanis.ESL.API.Document> uploadedDocuments = 
+                        JsonConvert.DeserializeObject<IList<Silanis.ESL.API.Document>>(response, settings);
+
+                    foreach (Silanis.ESL.API.Document uploadedDocument in uploadedDocuments) 
+                    {
+                        sdkDocuments.Add(new DocumentConverter(uploadedDocument, internalPackage).ToSDKDocument());
+                    }
+                } 
+                else 
+                {
+                    Silanis.ESL.API.Document uploadedDocument = 
+                        JsonConvert.DeserializeObject<Silanis.ESL.API.Document>(response, settings);
                     sdkDocuments.Add(new DocumentConverter(uploadedDocument, internalPackage).ToSDKDocument());
                 }
 
