@@ -164,6 +164,7 @@
     <Compile Include="src\DocumentAttributesExample.cs" />
     <Compile Include="src\CreateAndGetLayoutExample.cs" />
     <Compile Include="src\AdaPackageExample.cs" />
+    <Compile Include="src\ApplyLayoutByNameExample.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -206,10 +207,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="app.config" />
-    <None Include="src\document_with_text_tag_and_form_field.pdf">
+    <None Include="src\taggedDocument.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="src\taggedDocument.pdf">
+    <None Include="src\Text_Tag_And_Acrobat_Form_Fields.pdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
