@@ -1,11 +1,16 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Silanis.ESL.API;
-using Silanis.ESL.SDK.Internal;
 using System;
-using System.Collections.Generic;
+using System.Net;
 using System.IO;
 using System.Text;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using Silanis.ESL.SDK.Internal;
+using Silanis.ESL.SDK.Builder;
+using Silanis.ESL.API;
+using System.Globalization;
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Utilities.LinqBridge;
+using System.Collections.Specialized;
 
 namespace Silanis.ESL.SDK.Services
 {
@@ -43,11 +48,11 @@ namespace Silanis.ESL.SDK.Services
         internal PackageId CreatePackage(Silanis.ESL.API.Package package)
         {
             string path = template.UrlFor(UrlTemplate.PACKAGE_PATH)
-                .Build();
+				.Build();
             try
             {
                 string json = JsonConvert.SerializeObject(package, settings);
-                string response = restClient.Post(path, json);
+                string response = restClient.Post(path, json);				
                 PackageId result = JsonConvert.DeserializeObject<PackageId>(response);
 
                 return result;
@@ -82,7 +87,7 @@ namespace Silanis.ESL.SDK.Services
                 string boundary = GenerateBoundary();
                 byte[] content = CreateMultipartPackage(documents, payloadBytes, boundary);
 
-                string response = restClient.PostMultipartPackage(path, content, boundary, json);
+                string response = restClient.PostMultipartPackage(path, content, boundary, json); 
 
                 PackageId result = JsonConvert.DeserializeObject<PackageId>(response);
 
@@ -125,8 +130,8 @@ namespace Silanis.ESL.SDK.Services
         internal Silanis.ESL.API.Package GetPackage(PackageId packageId)
         {
             string path = template.UrlFor(UrlTemplate.PACKAGE_ID_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Build();
 
             try
             {
@@ -156,9 +161,9 @@ namespace Silanis.ESL.SDK.Services
         public void DeleteDocument(PackageId packageId, string documentId)
         {
             string path = template.UrlFor(UrlTemplate.DOCUMENT_ID_PATH)
-                            .Replace("{packageId}", packageId.Id)
-                            .Replace("{documentId}", documentId)
-                            .Build();
+							.Replace("{packageId}", packageId.Id)
+							.Replace("{documentId}", documentId)
+							.Build();
 
             try
             {
@@ -240,7 +245,7 @@ namespace Silanis.ESL.SDK.Services
             }
 
             IContractResolver prevContractResolver = settings.ContractResolver;
-            settings.ContractResolver = DocumentMetadataContractResolver.Instance;
+            settings.ContractResolver = DocumentMetadataContractResolver.Instance;            
 
             try
             {
@@ -264,8 +269,8 @@ namespace Silanis.ESL.SDK.Services
         public void OrderDocuments(DocumentPackage package)
         {
             string path = template.UrlFor(UrlTemplate.DOCUMENT_PATH)
-                .Replace("{packageId}", package.Id.Id)
-                .Build();
+				.Replace("{packageId}", package.Id.Id)
+				.Build();
 
             List<Silanis.ESL.API.Document> documents = new List<Silanis.ESL.API.Document>();
             foreach (Document doc in package.Documents)
@@ -331,7 +336,7 @@ namespace Silanis.ESL.SDK.Services
             try
             {
                 string response = restClient.Get(path);
-                IList<Silanis.ESL.API.Document> apiResponse =
+                IList<Silanis.ESL.API.Document> apiResponse = 
                     JsonConvert.DeserializeObject<IList<Silanis.ESL.API.Document>>(response, settings);
                 IList<Document> documents = new List<Document>();
                 foreach (Silanis.ESL.API.Document document in apiResponse)
@@ -361,7 +366,7 @@ namespace Silanis.ESL.SDK.Services
                 .Build();
 
             try
-            {
+            {			
                 restClient.Post(path, "{\"status\":\"SENT\"}");
             }
             catch (EslServerException e)
@@ -383,9 +388,9 @@ namespace Silanis.ESL.SDK.Services
         public byte[] DownloadDocument(PackageId packageId, String documentId)
         {
             string path = template.UrlFor(UrlTemplate.PDF_PATH)
-                .Replace("{packageId}", packageId.Id)
-                    .Replace("{documentId}", documentId)
-                    .Build();
+				.Replace("{packageId}", packageId.Id)
+					.Replace("{documentId}", documentId)
+					.Build();
 
             try
             {
@@ -483,7 +488,7 @@ namespace Silanis.ESL.SDK.Services
             string path = template.UrlFor(UrlTemplate.PACKAGE_ID_PATH)
                 .Replace("{packageId}", packageId.Id)
                 .Build();
-
+                
             try
             {
                 restClient.Put(path, JsonConvert.SerializeObject(package, settings));
@@ -499,7 +504,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        internal void ChangePackageStatusToDraft(PackageId packageId)
+        internal void ChangePackageStatusToDraft(PackageId packageId) 
         {
             string path = template.UrlFor(UrlTemplate.PACKAGE_ID_PATH)
                 .Replace("{packageId}", packageId.Id)
@@ -530,7 +535,7 @@ namespace Silanis.ESL.SDK.Services
         {
             string path = template.UrlFor(UrlTemplate.DOCUMENT_PATH)
                 .Replace("{packageId}", packageId.Id)
-                .Build();
+				.Build();
 
             Silanis.ESL.API.Package internalPackage = GetPackage(packageId);
             Silanis.ESL.API.Document internalDoc = new DocumentConverter(document).ToAPIDocument(internalPackage);
@@ -616,28 +621,28 @@ namespace Silanis.ESL.SDK.Services
         {
 
             Encoding encoding = Encoding.UTF8;
-            Stream formDataStream = new MemoryStream();
+            Stream formDataStream = new MemoryStream ();
 
-            string header = string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\n\r\n",
+            string header = string.Format ("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\n\r\n",
                                            boundary, "payload", "paylaod");
-            formDataStream.Write(encoding.GetBytes(header), 0, encoding.GetByteCount(header));
-            formDataStream.Write(payloadBytes, 0, payloadBytes.Length);
+            formDataStream.Write (encoding.GetBytes (header), 0, encoding.GetByteCount (header));
+            formDataStream.Write (payloadBytes, 0, payloadBytes.Length);
 
-            formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
+            formDataStream.Write (encoding.GetBytes ("\r\n"), 0, encoding.GetByteCount ("\r\n"));
 
-            string data = string.Format("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n",
-                                         boundary, "file", fileName, MimeTypeUtil.GetMIMEType(fileName));
-            formDataStream.Write(encoding.GetBytes(data), 0, encoding.GetByteCount(data));
-            formDataStream.Write(fileBytes, 0, fileBytes.Length);
+            string data = string.Format ("--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n",
+                                         boundary, "file", fileName, MimeTypeUtil.GetMIMEType (fileName));
+            formDataStream.Write (encoding.GetBytes (data), 0, encoding.GetByteCount (data));
+            formDataStream.Write (fileBytes, 0, fileBytes.Length);
 
             string footer = "\r\n--" + boundary + "--\r\n";
-            formDataStream.Write(encoding.GetBytes(footer), 0, encoding.GetByteCount(footer));
+            formDataStream.Write (encoding.GetBytes (footer), 0, encoding.GetByteCount (footer));
 
             //Dump the stream
             formDataStream.Position = 0;
             byte[] formData = new byte[formDataStream.Length];
-            formDataStream.Read(formData, 0, formData.Length);
-            formDataStream.Close();
+            formDataStream.Read (formData, 0, formData.Length);
+            formDataStream.Close ();
 
             return formData;
         }
@@ -683,10 +688,10 @@ namespace Silanis.ESL.SDK.Services
         public SigningStatus GetSigningStatus(PackageId packageId, string signerId, string documentId)
         {
             string path = template.UrlFor(UrlTemplate.SIGNING_STATUS_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Replace("{signerId}", !String.IsNullOrEmpty(signerId) ? signerId : "")
-                .Replace("{documentId}", !String.IsNullOrEmpty(documentId) ? documentId : "")
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Replace("{signerId}", !String.IsNullOrEmpty(signerId) ? signerId : "")
+				.Replace("{documentId}", !String.IsNullOrEmpty(documentId) ? documentId : "")
+				.Build();
 
             try
             {
@@ -694,7 +699,7 @@ namespace Silanis.ESL.SDK.Services
                 JsonTextReader reader = new JsonTextReader(new StringReader(response));
 
                 //Loop 'till we get to the status value
-                while (reader.Read() && reader.TokenType != JsonToken.String)
+                while (reader.Read () && reader.TokenType != JsonToken.String)
                 {
                 }
 
@@ -713,8 +718,8 @@ namespace Silanis.ESL.SDK.Services
         internal IList<Role> GetRoles(PackageId packageId)
         {
             String path = template.UrlFor(UrlTemplate.ROLE_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Build();
 
             Result<Role> response = null;
             try
@@ -743,11 +748,11 @@ namespace Silanis.ESL.SDK.Services
             }
             catch (EslServerException e)
             {
-                throw new EslServerException("Could not delete package. Exception: " + e.Message, e.ServerError, e);
+                throw new EslServerException("Could not delete package. Exception: " + e.Message, e.ServerError, e);    
             }
             catch (Exception e)
             {
-                throw new EslException("Could not delete package. Exception: " + e.Message, e);
+                throw new EslException("Could not delete package. Exception: " + e.Message, e);	
             }
         }
 
@@ -894,9 +899,9 @@ namespace Silanis.ESL.SDK.Services
         {
 
             string path = template.UrlFor(UrlTemplate.NOTIFY_ROLE_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Replace("{roleId}", roleId)
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Replace("{roleId}", roleId)
+				.Build();
 
             try
             {
@@ -934,11 +939,11 @@ namespace Silanis.ESL.SDK.Services
             }
             catch (EslServerException e)
             {
-                throw new EslServerException("Could not send email notification to signer. Exception: " + e.Message, e.ServerError, e);
+                throw new EslServerException("Could not send email notification to signer. Exception: " + e.Message, e.ServerError, e); 
             }
             catch (Exception e)
             {
-                throw new EslException("Could not send email notification to signer. Exception: " + e.Message, e);
+                throw new EslException("Could not send email notification to signer. Exception: " + e.Message, e);	
             }
         }
 
@@ -946,9 +951,9 @@ namespace Silanis.ESL.SDK.Services
         {
             string path = template.UrlFor(UrlTemplate.PACKAGE_LIST_PATH)
                 .Replace("{status}", new PackageStatusConverter(status).ToAPIPackageStatus())
-                .Replace("{from}", request.From.ToString())
-                .Replace("{to}", request.To.ToString())
-                .Build();
+				.Replace("{from}", request.From.ToString())
+				.Replace("{to}", request.To.ToString())
+				.Build();
 
             try
             {
@@ -960,12 +965,12 @@ namespace Silanis.ESL.SDK.Services
             catch (EslServerException e)
             {
                 Console.WriteLine(e.StackTrace);
-                throw new EslServerException("Could not get package list. Exception: " + e.Message, e.ServerError, e);
+                throw new EslServerException("Could not get package list. Exception: " + e.Message, e.ServerError, e);  
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                throw new EslException("Could not get package list. Exception: " + e.Message, e);
+                throw new EslException("Could not get package list. Exception: " + e.Message, e);	
             }
         }
 
@@ -992,12 +997,12 @@ namespace Silanis.ESL.SDK.Services
             catch (EslServerException e)
             {
                 Console.WriteLine(e.StackTrace);
-                throw new EslServerException("Could not get package list. Exception: " + e.Message, e.ServerError, e);
+                throw new EslServerException("Could not get package list. Exception: " + e.Message, e.ServerError, e);  
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                throw new EslException("Could not get package list. Exception: " + e.Message, e);
+                throw new EslException("Could not get package list. Exception: " + e.Message, e);  
             }
         }
 
@@ -1065,12 +1070,12 @@ namespace Silanis.ESL.SDK.Services
             Role apiPayload = new SignerConverter(signer).ToAPIRole(System.Guid.NewGuid().ToString());
 
             string path = template.UrlFor(UrlTemplate.ADD_SIGNER_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Build();
             try
             {
                 string json = JsonConvert.SerializeObject(apiPayload, settings);
-                string response = restClient.Post(path, json);
+                string response = restClient.Post(path, json);              
                 Role apiRole = JsonConvert.DeserializeObject<Role>(response);
 
                 return apiRole.Id;
@@ -1088,9 +1093,9 @@ namespace Silanis.ESL.SDK.Services
         public Signer GetSigner(PackageId packageId, string signerId)
         {
             string path = template.UrlFor(UrlTemplate.GET_SIGNER_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Replace("{roleId}", signerId)
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Replace("{roleId}", signerId)
+				.Build();
 
             try
             {
@@ -1113,13 +1118,13 @@ namespace Silanis.ESL.SDK.Services
             Role apiPayload = new SignerConverter(signer).ToAPIRole(System.Guid.NewGuid().ToString());
 
             string path = template.UrlFor(UrlTemplate.UPDATE_SIGNER_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Replace("{roleId}", signer.Id)
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Replace("{roleId}", signer.Id)
+				.Build();
             try
             {
                 string json = JsonConvert.SerializeObject(apiPayload, settings);
-                restClient.Put(path, json);
+                restClient.Put(path, json);              
             }
             catch (EslServerException e)
             {
@@ -1134,9 +1139,9 @@ namespace Silanis.ESL.SDK.Services
         public void RemoveSigner(PackageId packageId, string signerId)
         {
             string path = template.UrlFor(UrlTemplate.REMOVE_SIGNER_PATH)
-                .Replace("{packageId}", packageId.Id)
-                .Replace("{roleId}", signerId)
-                .Build();
+				.Replace("{packageId}", packageId.Id)
+				.Replace("{roleId}", signerId)
+				.Build();
 
             try
             {
@@ -1156,8 +1161,8 @@ namespace Silanis.ESL.SDK.Services
         public void OrderSigners(DocumentPackage package)
         {
             string path = template.UrlFor(UrlTemplate.ROLE_PATH)
-                .Replace("{packageId}", package.Id.Id)
-                .Build();
+				.Replace("{packageId}", package.Id.Id)
+				.Build();
 
             List<Silanis.ESL.API.Role> roles = new List<Silanis.ESL.API.Role>();
             foreach (Signer signer in package.Signers)
@@ -1203,17 +1208,17 @@ namespace Silanis.ESL.SDK.Services
 
         public void ConfigureDocumentVisibility(PackageId packageId, DocumentVisibility visibility)
         {
-            string path = template.UrlFor(UrlTemplate.DOCUMENT_VISIBILITY_PATH)
+            string path = template.UrlFor( UrlTemplate.DOCUMENT_VISIBILITY_PATH )
                 .Replace("{packageId}", packageId.Id)
                 .Build();
 
             Silanis.ESL.API.DocumentVisibility apiVisibility = new DocumentVisibilityConverter(visibility).ToAPIDocumentVisibility();
             string json = JsonConvert.SerializeObject(apiVisibility, settings);
 
-            try
+            try 
             {
                 restClient.Post(path, json);
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not configure document visibility." + " Exception: " + e.Message, e.ServerError, e);
@@ -1224,19 +1229,18 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public DocumentVisibility GetDocumentVisibility(PackageId packageId)
+        public DocumentVisibility GetDocumentVisibility(PackageId packageId) 
         {
-            string path = template.UrlFor(UrlTemplate.DOCUMENT_VISIBILITY_PATH)
+            string path = template.UrlFor( UrlTemplate.DOCUMENT_VISIBILITY_PATH )
                 .Replace("{packageId}", packageId.Id)
                 .Build();
 
-            try
-            {
+            try {
                 string response = restClient.Get(path);
                 Silanis.ESL.API.DocumentVisibility apiVisibility = JsonConvert.DeserializeObject<Silanis.ESL.API.DocumentVisibility>(response, settings);
 
                 return new DocumentVisibilityConverter(apiVisibility).ToSDKDocumentVisibility();
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not get document visibility." + " Exception: " + e.Message, e.ServerError, e);
@@ -1247,7 +1251,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public IList<Silanis.ESL.SDK.Document> GetDocuments(PackageId packageId, string signerId)
+        public IList<Silanis.ESL.SDK.Document> GetDocuments(PackageId packageId, string signerId) 
         {
             Package aPackage = GetPackage(packageId);
             DocumentPackageConverter converter = new DocumentPackageConverter(aPackage);
@@ -1257,7 +1261,7 @@ namespace Silanis.ESL.SDK.Services
             return visibility.GetDocuments(documentPackage, signerId);
         }
 
-        public IList<Silanis.ESL.SDK.Signer> GetSigners(PackageId packageId, string documentId)
+        public IList<Silanis.ESL.SDK.Signer> GetSigners(PackageId packageId, string documentId) 
         {
             Package aPackage = GetPackage(packageId);
             DocumentPackageConverter converter = new DocumentPackageConverter(aPackage);
@@ -1303,20 +1307,20 @@ namespace Silanis.ESL.SDK.Services
             return reportService.DownloadUsageReport(from, to);
         }
 
-        public string GetSigningUrl(PackageId packageId, string signerId)
+        public string GetSigningUrl(PackageId packageId, string signerId) 
         {
             Package package = GetPackage(packageId);
 
             return GetSigningUrl(packageId, GetRole(package, signerId));
         }
 
-        private Role GetRole(Package package, string sigenrId)
+        private Role GetRole(Package package, string sigenrId) 
         {
-            foreach (Role role in package.Roles)
+            foreach(Role role in package.Roles) 
             {
-                foreach (Silanis.ESL.API.Signer signer in role.Signers)
+                foreach(Silanis.ESL.API.Signer signer in role.Signers) 
                 {
-                    if (signer.Id.Equals(sigenrId))
+                    if(signer.Id.Equals(sigenrId)) 
                     {
                         return role;
                     }
@@ -1327,11 +1331,11 @@ namespace Silanis.ESL.SDK.Services
 
         private Role GetRoleByEmail(Package package, string signerEmail)
         {
-            foreach (Role role in package.Roles)
+            foreach(Role role in package.Roles) 
             {
-                foreach (Silanis.ESL.API.Signer signer in role.Signers)
+                foreach(Silanis.ESL.API.Signer signer in role.Signers) 
                 {
-                    if (signer.Email.Equals(signerEmail))
+                    if(signer.Email.Equals(signerEmail)) 
                     {
                         return role;
                     }
@@ -1340,7 +1344,7 @@ namespace Silanis.ESL.SDK.Services
             return new Role();
         }
 
-        private string GetSigningUrl(PackageId packageId, Role role)
+        private string GetSigningUrl(PackageId packageId, Role role) 
         {
 
             string path = template.UrlFor(UrlTemplate.SIGNER_URL_PATH)
@@ -1348,12 +1352,12 @@ namespace Silanis.ESL.SDK.Services
                          .Replace("{roleId}", role.Id)
                          .Build();
 
-            try
+            try 
             {
                 string response = restClient.Get(path);
                 SigningUrl signingUrl = JsonConvert.DeserializeObject<Silanis.ESL.API.SigningUrl>(response, settings);
                 return signingUrl.Url;
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not get a signing url." + " Exception: " + e.Message, e.ServerError, e);
@@ -1364,7 +1368,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public string StartFastTrack(PackageId packageId, List<FastTrackSigner> signers)
+        public string StartFastTrack(PackageId packageId, List<FastTrackSigner> signers) 
         {
             string token = GetFastTrackToken(packageId, true);
             string path = template.UrlFor(UrlTemplate.START_FAST_TRACK_PATH)
@@ -1372,8 +1376,7 @@ namespace Silanis.ESL.SDK.Services
                          .Build();
 
             List<FastTrackRole> roles = new List<FastTrackRole>();
-            foreach (FastTrackSigner signer in signers)
-            {
+            foreach(FastTrackSigner signer in signers) {
                 FastTrackRole role = FastTrackRoleBuilder.NewRoleWithId(signer.Id)
                         .WithName(signer.Id)
                         .WithSigner(signer)
@@ -1399,7 +1402,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        private string GetFastTrackToken(PackageId packageId, Boolean signing)
+        private string GetFastTrackToken(PackageId packageId, Boolean signing) 
         {
             string fastTrackUrl = GetFastTrackUrl(packageId, signing);
             string finalUrl = RedirectResolver.ResolveUrlAfterRedirect(fastTrackUrl);
@@ -1407,19 +1410,19 @@ namespace Silanis.ESL.SDK.Services
             return finalUrl.Substring(finalUrl.LastIndexOf('=') + 1);
         }
 
-        private string GetFastTrackUrl(PackageId packageId, Boolean signing)
+        private string GetFastTrackUrl(PackageId packageId, Boolean signing) 
         {
             string path = template.UrlFor(UrlTemplate.FAST_TRACK_URL_PATH)
                                   .Replace("{packageId}", packageId.Id)
                                   .Replace("{signing}", signing.ToString())
                                   .Build();
 
-            try
+            try 
             {
                 string response = restClient.Get(path);
                 SigningUrl signingUrl = JsonConvert.DeserializeObject<Silanis.ESL.API.SigningUrl>(response, settings);
                 return signingUrl.Url;
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not get a fastTrack url." + " Exception: " + e.Message, e.ServerError, e);
@@ -1430,13 +1433,13 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public void SendSmsToSigner(PackageId packageId, Signer signer)
+        public void SendSmsToSigner(PackageId packageId, Signer signer) 
         {
             Role role = new SignerConverter(signer).ToAPIRole(System.Guid.NewGuid().ToString());
             SendSmsToSigner(packageId, role);
         }
 
-        private void SendSmsToSigner(PackageId packageId, Role role)
+        private void SendSmsToSigner(PackageId packageId, Role role) 
         {
             string path = template.UrlFor(UrlTemplate.SEND_SMS_TO_SIGNER_PATH)
                                   .Replace("{packageId}", packageId.Id)
@@ -1446,7 +1449,7 @@ namespace Silanis.ESL.SDK.Services
             try
             {
                 restClient.Post(path, null);
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not send SMS to the signer." + " Exception: " + e.Message, e.ServerError, e);
@@ -1457,7 +1460,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public List<Silanis.ESL.SDK.NotaryJournalEntry> GetJournalEntries(string userId)
+        public List<Silanis.ESL.SDK.NotaryJournalEntry> GetJournalEntries(string userId) 
         {
             List<Silanis.ESL.SDK.NotaryJournalEntry> result = new List<Silanis.ESL.SDK.NotaryJournalEntry>();
 
@@ -1468,16 +1471,16 @@ namespace Silanis.ESL.SDK.Services
             try
             {
                 string response = restClient.Get(path);
-                Silanis.ESL.API.Result<Silanis.ESL.API.NotaryJournalEntry> apiResponse = JsonConvert.DeserializeObject<Silanis.ESL.API.Result<Silanis.ESL.API.NotaryJournalEntry>>(response, settings);
+                Silanis.ESL.API.Result<Silanis.ESL.API.NotaryJournalEntry> apiResponse = JsonConvert.DeserializeObject<Silanis.ESL.API.Result<Silanis.ESL.API.NotaryJournalEntry>> (response, settings );
 
-                foreach (Silanis.ESL.API.NotaryJournalEntry apiNotaryJournalEntry in apiResponse.Results)
+                foreach ( Silanis.ESL.API.NotaryJournalEntry apiNotaryJournalEntry in apiResponse.Results ) 
                 {
-                    result.Add(new NotaryJournalEntryConverter(apiNotaryJournalEntry).ToSDKNotaryJournalEntry());
+                    result.Add( new NotaryJournalEntryConverter( apiNotaryJournalEntry ).ToSDKNotaryJournalEntry() );
                 }
 
                 return result;
 
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not get Journal Entries." + " Exception: " + e.Message, e.ServerError, e);
@@ -1488,7 +1491,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public DownloadedFile GetJournalEntriesAsCSV(string userId)
+        public DownloadedFile GetJournalEntriesAsCSV(string userId) 
         {
             string path = template.UrlFor(UrlTemplate.NOTARY_JOURNAL_CSV_PATH)
                     .Replace("{userId}", userId)
@@ -1497,7 +1500,7 @@ namespace Silanis.ESL.SDK.Services
             try
             {
                 return restClient.GetBytes(path);
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not get Journal Entries in csv." + " Exception: " + e.Message, e.ServerError, e);
@@ -1508,7 +1511,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public string GetThankYouDialogContent(PackageId packageId)
+        public string GetThankYouDialogContent(PackageId packageId) 
         {
             string path = template.UrlFor(UrlTemplate.THANK_YOU_DIALOG_PATH)
                     .Replace("{packageId}", packageId.Id)
@@ -1519,7 +1522,7 @@ namespace Silanis.ESL.SDK.Services
                 string response = restClient.Get(path);
                 Dictionary<string, string> thankYouDialogContent = JsonConvert.DeserializeObject<Dictionary<string, string>>(response, settings);
                 return thankYouDialogContent["body"];
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not get thank you dialog content." + " Exception: " + e.Message, e.ServerError, e);
@@ -1530,7 +1533,7 @@ namespace Silanis.ESL.SDK.Services
             }
         }
 
-        public SupportConfiguration GetConfig(PackageId packageId)
+        public SupportConfiguration GetConfig(PackageId packageId) 
         {
             string path = template.UrlFor(UrlTemplate.PACKAGE_INFORMATION_CONFIG_PATH)
                     .Replace("{packageId}", packageId.Id)
@@ -1541,7 +1544,7 @@ namespace Silanis.ESL.SDK.Services
                 string response = restClient.Get(path);
                 Silanis.ESL.API.SupportConfiguration apiSupportConfiguration = JsonConvert.DeserializeObject<Silanis.ESL.API.SupportConfiguration>(response, settings);
                 return new SupportConfigurationConverter(apiSupportConfiguration).ToSDKSupportConfiguration();
-            }
+            } 
             catch (EslServerException e)
             {
                 throw new EslServerException("Could not get support configuration." + " Exception: " + e.Message, e.ServerError, e);
